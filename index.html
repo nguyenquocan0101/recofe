@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vòng Đời Mới - Biến bã cà phê thành tác phẩm nghệ thuật</title>
+    <link rel="icon" href="recofe.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-coffee: #5D4037;
+            --secondary-coffee: #8D6E63;
+            --accent-green: #4CAF50;
+            --bg-dark: #1a1a1a;
+            --text-light: #f5f5f5;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            min-width: 100%;
+            min-height: 100%;
+            object-fit: cover;
+            opacity: 1; /* Hiển thị rõ nét mặc định */
+            transition: opacity 0.8s ease;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+
+        .video-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Particle Overlay */
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1; /* Nằm dưới Modal nhưng trên Video */
+        }
+
+        .particle {
+            position: fixed;
+            bottom: -20px;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatUp linear infinite;
+        }
+
+        .particle.coffee {
+            background: rgba(93, 64, 55, 0.5); /* Màu nâu bã cà phê */
+            border-radius: 50%;
+        }
+
+        .particle.leaf {
+            background: none;
+            color: rgba(76, 175, 80, 0.4); /* Màu xanh lá nhạt */
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes floatUp {
+            0% { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 0; 
+            }
+            20% { 
+                opacity: 0.6; 
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% { 
+                transform: translateY(-110vh) rotate(360deg); 
+                opacity: 0; 
+            }
+        }
+
+        /* Layout */
+        header {
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .hero {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .btn-open {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-open:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+            background-color: #43A047;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            display: flex; /* Hiển thị ngay lập tức */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15); /* Nền trắng mờ trong suốt */
+            backdrop-filter: blur(15px);
+            padding: 50px;
+            max-width: 700px;
+            width: 90%;
+            border-radius: 40px;
+            position: relative;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            border: none; /* Loại bỏ đường viền */
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 25px;
+            color: var(--accent-green);
+        }
+
+        .modal-content p {
+            line-height: 1.8;
+            font-size: 1.15rem;
+            margin-bottom: 30px;
+            color: #ddd;
+        }
+
+        .modal-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-card h4 {
+            color: var(--accent-green);
+            margin-bottom: 10px;
+        }
+
+        /* Footer Message */
+        .footer-msg {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            opacity: 0.5;
+            font-size: 0.9rem;
+            z-index: 5;
+        }
+
+        /* Animations for content */
+        .fade-in {
+            animation: fadeIn 1.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="video-background">
+        <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1920">
+            <!-- Video mới theo yêu cầu -->
+            <source src="W:\RECOFE\tiktok_video_2.mp4" type="video/mp4">
+            <!-- Fallback video chất lượng cao từ CDN -->
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-coffee-being-poured-into-a-cup-34442-large.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- Container cho các hạt bay lơ lửng -->
+    <div id="particle-container"></div>
+
+    <header>
+        <a href="#" class="logo">
+            <img src="recofe.svg" alt="RECAFÉ Logo" style="height: 60px; vertical-align: middle;">
+        </a>
+    </header>
+
+    <main class="hero fade-in">
+        <!-- Nội dung text đã được đưa lên tiêu đề trang -->
+    </main>
+
+    <div class="footer-msg">© 2026 RECAFÉ Project. Đưa sự bền vững vào từng tách cà phê.</div>
+
+    <!-- Modal trình bày về dự án -->
+    <div class="modal active" id="modal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeModal">&times;</button>
+            <div style="margin-bottom: 20px;">
+                <img src="recofe.svg" alt="RECAFÉ Icon" style="width: 120px; height: auto;">
+            </div>
+            <h2>Chào Mừng Đến Với RECAFÉ</h2>
+            <p>
+                Khám phá cách chúng tôi kiến tạo vòng đời mới cho bã cà phê, 
+                biến rác thải thành giá trị nghệ thuật và bền vững.
+            </p>
+            <button class="btn-open" id="exploreBtn" style="margin-top: 20px;">Khám Phá Ngay</button>
+            
+            <div class="modal-info-grid">
+                <div class="info-card">
+                    <h4>Nghệ Thuật</h4>
+                    <p>Sáng tạo không biên giới.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Bền Vững</h4>
+                    <p>Vì một tương lai xanh.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Hiệu ứng Anti-gravity (Hạt bã cà phê & Icon bay lơ lửng)
+        function createParticles() {
+            const container = document.getElementById('particle-container');
+            const particleCount = 25; // Số lượng hạt bay
+
+            for (let i = 0; i < particleCount; i++) {
+                let particle = document.createElement('div');
+                
+                // Random tỉ lệ: 70% là bã cà phê, 30% là icon xanh
+                const isLeaf = Math.random() > 0.7;
+                
+                particle.className = 'particle ' + (isLeaf ? 'leaf' : 'coffee');
+                
+                if (isLeaf) {
+                    // Thêm icon lá xanh (SVG cơ bản hoặc ký tự)
+                    particle.innerHTML = '🍃'; 
+                }
+
+                // Random kích thước, vị trí và thời gian bay
+                let sizeVal = Math.random() * 8 + 4;
+                let size = sizeVal + 'px';
+                
+                particle.style.width = size;
+                particle.style.height = size;
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDuration = Math.random() * 10 + 8 + 's'; // Bay chậm rãi (8-18s)
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                
+                // Random rotation ban đầu
+                particle.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        const modal = document.getElementById('modal');
+        const closeBtn = document.getElementById('closeModal');
+        const exploreBtn = document.getElementById('exploreBtn');
+        const videoOverlay = document.querySelector('.video-overlay');
+
+        // Hàm đóng modal và làm rõ video
+        const closeModalFunc = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Loại bỏ lớp phủ tối để video rõ nét
+            if (videoOverlay) {
+                videoOverlay.classList.add('hidden');
+            }
+            
+            // Đảm bảo video chạy
+            const bgVideo = document.querySelector('.video-background video');
+            if (bgVideo) bgVideo.play();
+        };
+
+        exploreBtn.onclick = closeModalFunc;
+        closeBtn.onclick = closeModalFunc;
+
+        window.onclick = (e) => {
+            if (e.target === modal) {
+                closeModalFunc();
+            }
+        };
+
+        // Khởi tạo
+        window.addEventListener('load', createParticles);
+    </script>
+</body>
+</html>
